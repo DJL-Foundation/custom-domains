@@ -1,5 +1,5 @@
 {
-  "name": "fallback",
+  "name": "custom-domains",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
