@@ -1,0 +1,23 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "fallback",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-03-06",
+	"kv_namespaces": [
+		{
+			"binding": "hostnames-kv",
+			"id": "2d52a37fdff3405f91aa7635cd068519",
+			"remote": true
+		}
+	],
+  "secrets_store_secrets": [
+    {
+      "binding": "access-key",
+      "store_id": "c641e49481bc457e8e333064594420ef",
+      "secret_name": "custom-domains-access-secret"
+    }
+  ],
+  "version_metadata": {
+    "binding": "version"
+  }
+}
