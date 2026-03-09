@@ -1,45 +1,49 @@
 {
-	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "custom-domains",
-	"main": "src/index.ts",
-	"compatibility_date": "2026-03-06",
-	"kv_namespaces": [
-		{
-			"binding": "hostnames-kv",
-			"id": "2d52a37fdff3405f91aa7635cd068519",
-			"remote": true,
-		},
-	],
-	"secrets": {
-		"required": [
-			"ACCESS_TOKEN"
-		]
-	},
-	"observability": {
-		"enabled": false,
-		"head_sampling_rate": 1,
-		"logs": {
-			"enabled": true,
-			"head_sampling_rate": 1,
-			"persist": true,
-			"invocation_logs": true,
-		},
-		"traces": {
-			"enabled": false,
-			"persist": true,
-			"head_sampling_rate": 1,
-		},
-	},
-	"version_metadata": {
-		"binding": "version",
-	},
-	"routes": [
-		{
-			"pattern": "proxy.djl.foundation",
-			"zone_name": "djl.foundation",
-			"custom_domain": true
-		}
-	],
-	"workers_dev": true,
-	"preview_urls": true,
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "custom-domains",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-03-06",
+  "kv_namespaces": [
+    {
+      "binding": "hostnames-kv",
+      "id": "2d52a37fdff3405f91aa7635cd068519",
+      "remote": true,
+    },
+  ],
+  "secrets": {
+    "required": [
+      "ACCESS_TOKEN",
+      "ENCRYPTION_KEY",
+      "AXIOM_API_URL",
+      "AXIOM_DATASET",
+      "AXIOM_TOKEN",
+    ],
+  },
+  "observability": {
+    "enabled": false,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+      "invocation_logs": true,
+    },
+    "traces": {
+      "enabled": false,
+      "persist": true,
+      "head_sampling_rate": 1,
+    },
+  },
+  "version_metadata": {
+    "binding": "version",
+  },
+  "routes": [
+    {
+      "pattern": "proxy.djl.foundation",
+      "zone_name": "djl.foundation",
+      "custom_domain": true,
+    },
+  ],
+  "workers_dev": true,
+  "preview_urls": true,
 }

@@ -5,10 +5,18 @@
     "moduleResolution": "Bundler",
     "strict": true,
     "skipLibCheck": true,
-    "lib": [
-      "ESNext"
-    ],
+    "lib": ["ESNext"],
     "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx"
+    "jsxImportSource": "hono/jsx",
+    "baseUrl": ".",
+    "paths": {
+      "#version": ["src/version.ts"],
+      "#effective/*": ["src/effective/*"],
+      "#defective/*": ["src/effective/defective/*"],
+      "#services/*": ["src/effective/services/*"],
+      "~/*": ["src/*"],
+      "@/*": ["src/*"],
+    },
   },
+  "include": ["src", "worker-configuration.d.ts"],
 }
