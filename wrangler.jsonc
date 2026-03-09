@@ -12,13 +12,11 @@
     },
   ],
   "secrets": {
-    "required": [
-      "ACCESS_TOKEN",
-      "ENCRYPTION_KEY",
-      "AXIOM_API_URL",
-      "AXIOM_DATASET",
-      "AXIOM_TOKEN",
-    ],
+    "required": ["ACCESS_TOKEN", "ENCRYPTION_KEY", "AXIOM_TOKEN"],
+  },
+  "vars": {
+    "AXIOM_DATASET": "foundation-sass",
+    "AXIOM_API_URL": "https://eu-central-1.aws.edge.axiom.co",
   },
   "observability": {
     "enabled": false,
