@@ -14,8 +14,9 @@ const delete_domains = z.object({
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 
 app.use("/api/*", async (c, next) => {
+  console.log(c.env.ACCESS_TOKEN);
   const auth = bearerAuth({
-    token: await c.env["access-key"].get(),
+    token: c.env.ACCESS_TOKEN,
   });
   return auth(c, next);
 });
