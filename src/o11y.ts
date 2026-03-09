@@ -1,34 +1,48 @@
 import { Tracer } from "@effect/opentelemetry";
-import {
-  context,
-  propagation,
-  trace,
-  type SpanContext,
-} from "@opentelemetry/api";
+import { type SpanContext, TraceFlags } from "@opentelemetry/api";
 import { Effect, Option } from "effect";
 
 // ---------------------------------------------------------------------------
-// W3C context extraction
+// W3C traceparent parsing — fully stateless, no async_hooks / context manager
 // ---------------------------------------------------------------------------
 
-const extractSpanContext = (headers: Headers) => {
-  const carrier: Record<string, string> = {};
-  headers.forEach((value, key) => {
-    carrier[key] = value;
+const TRACEPARENT_HEADER = "traceparent";
+const TRACESTATE_HEADER = "tracestate";
+
+// Matches: 00-<32 hex traceId>-<16 hex spanId>-<2 hex flags>
+const TRACEPARENT_RE =
+  /^([0-9a-f]{2})-([0-9a-f]{32})-([0-9a-f]{16})-([0-9a-f]{2})$/i;
+
+const extractSpanContext = (headers: Headers): Option.Option<SpanContext> => {
+  const raw = headers.get(TRACEPARENT_HEADER);
+  if (!raw) return Option.none();
+
+  const match = raw.trim().match(TRACEPARENT_RE);
+  if (!match) return Option.none();
+
+  const [, , traceId, spanId, flagsHex] = match;
+  const traceFlags = parseInt(flagsHex, 16) as TraceFlags;
+
+  // version ff is invalid per W3C spec
+  if (match[1] === "ff") return Option.none();
+  // all-zero traceId or spanId are invalid
+  if (/^0+$/.test(traceId) || /^0+$/.test(spanId)) return Option.none();
+
+  const traceStateRaw = headers.get(TRACESTATE_HEADER);
+
+  return Option.some({
+    traceId: traceId.toLowerCase(),
+    spanId: spanId.toLowerCase(),
+    traceFlags,
+    isRemote: true,
+    ...(traceStateRaw
+      ? {
+          traceState: {
+            serialize: () => traceStateRaw,
+          } as SpanContext["traceState"],
+        }
+      : {}),
   });
-
-  const otelContext = propagation.extract(context.active(), carrier, {
-    get: (c, key) => c[key],
-    keys: (c) => Object.keys(c),
-  });
-
-  const spanContext = trace.getSpanContext(otelContext);
-
-  if (!spanContext?.traceId || !spanContext?.spanId) {
-    return Option.none<SpanContext>();
-  }
-
-  return Option.some(spanContext as SpanContext);
 };
 
 // ---------------------------------------------------------------------------
