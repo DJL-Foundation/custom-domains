@@ -24,6 +24,106 @@ type Env = {
 
 const app = new Hono<Env>();
 
+const ROOT_PROXY_HOSTS = new Set([
+  "custom-domains.bildung.workers.dev",
+  "proxy.djl.foundation",
+]);
+
+const ROOT_PROXY_BRANCH_SUFFIX = "-custom-domains.bildung.workers.dev";
+
+const isRootProxyHost = (host: string): boolean =>
+  ROOT_PROXY_HOSTS.has(host) ||
+  (host.endsWith(ROOT_PROXY_BRANCH_SUFFIX) &&
+    host.length > ROOT_PROXY_BRANCH_SUFFIX.length);
+
+const rootProxyLandingPage = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>DJL Foundation Proxy</title>
+    <style>
+      :root {
+        color-scheme: light;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        background: radial-gradient(circle at top, #f4f8ff, #e7eef8 40%, #dce7f6);
+        color: #16253b;
+      }
+
+      main {
+        width: min(720px, 92vw);
+        padding: 2rem;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid rgba(22, 37, 59, 0.15);
+        box-shadow: 0 20px 50px rgba(17, 35, 58, 0.12);
+      }
+
+      h1 {
+        margin: 0 0 1rem;
+        font-size: clamp(1.5rem, 2.2vw, 2rem);
+      }
+
+      p {
+        margin: 0;
+        line-height: 1.55;
+        font-size: 1rem;
+      }
+
+      .redirect {
+        margin-top: 1.2rem;
+        font-weight: 600;
+      }
+
+      a {
+        color: #0e4cb5;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>DJL Foundation SaaS Proxy</h1>
+      <p>
+        This is the proxy for SaaS apps by the DJL Foundation. To use Custom
+        Domains, access your organization's settings in supported apps.
+      </p>
+      <p class="redirect">
+        Redirecting to
+        <a href="https://djl.foundation">djl.foundation</a> in
+        <span id="countdown">5</span> seconds.
+      </p>
+    </main>
+    <script>
+      const countdownEl = document.getElementById("countdown");
+      let remaining = 5;
+
+      const tick = () => {
+        remaining -= 1;
+        if (countdownEl) countdownEl.textContent = String(remaining);
+        if (remaining <= 0) {
+          window.location.replace("https://djl.foundation");
+          return;
+        }
+        setTimeout(tick, 1000);
+      };
+
+      setTimeout(tick, 1000);
+    </script>
+  </body>
+</html>`;
+
 // ---------------------------------------------------------------------------
 // Per-request layer factory
 // ---------------------------------------------------------------------------
@@ -222,6 +322,24 @@ const proxyRequest = Effect.fn("proxy-request")(function* (
 });
 
 app.all("*", async (c) => {
+  const requestHost = c.req.header("Host")?.split(":")[0]?.toLowerCase();
+  const requestPathname = new URL(c.req.url).pathname;
+
+  if (
+    c.req.method === "GET" &&
+    requestHost &&
+    requestPathname === "/" &&
+    isRootProxyHost(requestHost)
+  ) {
+    return new Response(rootProxyLandingPage, {
+      status: 200,
+      headers: {
+        "content-type": "text/html; charset=utf-8",
+        "cache-control": "no-store",
+      },
+    });
+  }
+
   const response = await Effect.runPromise(
     proxyRequest(c.req.raw, c.req.url).pipe(
       withServerSpan("proxy-request", c.req.raw.headers, {
