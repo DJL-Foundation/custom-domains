@@ -10,8 +10,8 @@
         {
           "pattern": "proxy.djl.foundation",
           "zone_name": "djl.foundation",
-          "custom_domain": true
-        }
+          "custom_domain": true,
+        },
       ],
       "observability": {
         "enabled": true,
@@ -19,40 +19,72 @@
         "traces": {
           "enabled": true,
           "head_sampling_rate": 0.1,
-          "persist": true
-        }
-      }
+          "persist": true,
+        },
+      },
+      "kv_namespaces": [
+        {
+          "binding": "hostnames-kv",
+          "id": "2d52a37fdff3405f91aa7635cd068519",
+          "remote": true,
+        },
+      ],
+      "vars": {
+        "ENVIRONMENT": "production",
+      },
+      "version_metadata": {
+        "binding": "version",
+      },
+      "secrets": {
+        "required": ["ACCESS_TOKEN", "ENCRYPTION_KEY", "AXIOM_TOKEN"],
+      },
     },
     "staging": {
-      "workers_dev": true
-    }
+      "workers_dev": true,
+      "vars": {
+        "ENVIRONMENT": "staging",
+      },
+      "kv_namespaces": [
+        {
+          "binding": "hostnames-kv",
+          "id": "2d52a37fdff3405f91aa7635cd068519",
+          "remote": true,
+        },
+      ],
+      "version_metadata": {
+        "binding": "version",
+      },
+      "secrets": {
+        "required": ["ACCESS_TOKEN", "ENCRYPTION_KEY", "AXIOM_TOKEN"],
+      },
+    },
   },
   "kv_namespaces": [
     {
       "binding": "hostnames-kv",
       "id": "2d52a37fdff3405f91aa7635cd068519",
-      "remote": true
-    }
+      "remote": true,
+    },
   ],
   "secrets": {
-    "required": ["ACCESS_TOKEN", "ENCRYPTION_KEY", "AXIOM_TOKEN"]
+    "required": ["ACCESS_TOKEN", "ENCRYPTION_KEY", "AXIOM_TOKEN"],
   },
   "vars": {
     "ENVIRONMENT": "dev",
     "AXIOM_DATASET": "foundation-sass",
-    "AXIOM_API_URL": "https://eu-central-1.aws.edge.axiom.co"
+    "AXIOM_API_URL": "https://eu-central-1.aws.edge.axiom.co",
   },
   "observability": {
     "enabled": false,
     "head_sampling_rate": 0.2,
     "traces": {
       "enabled": true,
-      "head_sampling_rate": 1
-    }
+      "head_sampling_rate": 1,
+    },
   },
   "version_metadata": {
-    "binding": "version"
+    "binding": "version",
   },
   "workers_dev": true,
-  "preview_urls": true
+  "preview_urls": true,
 }

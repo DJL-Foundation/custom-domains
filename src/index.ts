@@ -160,7 +160,7 @@ const PostDomainsBody = Schema.Struct({
 // ---------------------------------------------------------------------------
 
 app.use("/api/*", async (c, next) => {
-  const auth = bearerAuth({ token: c.env.ACCESS_TOKEN });
+  const auth = bearerAuth({ token: c.env.ACCESS_TOKEN ?? "" });
   return auth(c, next);
 });
 
