@@ -15,8 +15,8 @@
       "#defective/*": ["src/effective/defective/*"],
       "#services/*": ["src/effective/services/*"],
       "~/*": ["src/*"],
-      "@/*": ["src/*"],
-    },
+      "@/*": ["src/*"]
+    }
   },
-  "include": ["src", "worker-configuration.d.ts"],
+  "include": ["src", "worker-configuration.d.ts"]
 }

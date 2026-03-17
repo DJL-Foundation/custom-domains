@@ -39,22 +39,22 @@ const isDefectiveWtfError = (error: unknown): error is DefectiveWtfErrors =>
  *   .pipe(convertDefective)
  */
 export const convertDefective = <R, E, A>(
-   effect: Effect.Effect<A, E, R>,
- ): Effect.Effect<A, ConvertDefectiveError<E>, R> => {
-   return effect.pipe(
-     Effect.mapError((error) =>
-       isDefectiveWtfError(error)
-         ? new DefectiveLogic({
-             functionName: "TypescriptVSEffectError",
-             details: `TypescriptVSEffectError caught where it should be impossible${
-               error.location ? ` @ ${error.location}` : ""
-             }`,
-             path: error.path,
-           })
-         : (error as E),
-     ),
-   ) as Effect.Effect<A, ConvertDefectiveError<E>, R>;
- };
+  effect: Effect.Effect<A, E, R>,
+): Effect.Effect<A, ConvertDefectiveError<E>, R> => {
+  return effect.pipe(
+    Effect.mapError((error) =>
+      isDefectiveWtfError(error)
+        ? new DefectiveLogic({
+            functionName: "TypescriptVSEffectError",
+            details: `TypescriptVSEffectError caught where it should be impossible${
+              error.location ? ` @ ${error.location}` : ""
+            }`,
+            path: error.path,
+          })
+        : (error as E),
+    ),
+  ) as Effect.Effect<A, ConvertDefectiveError<E>, R>;
+};
 
 /**
  * Optional explicit helper if you prefer a named function in pipes.

@@ -1,7 +1,6 @@
+import { Effect, Option, Schema } from "effect";
 import { Hono } from "hono";
 import { bearerAuth } from "hono/bearer-auth";
-
-import { Effect, Option, Schema } from "effect";
 import { CloudflareEnv, makeCloudflareEnvLayer } from "#effective/cloudflare";
 import {
   annotateThis,

@@ -1,5 +1,5 @@
 import { Tracer } from "@effect/opentelemetry";
-import { type SpanContext, TraceFlags } from "@opentelemetry/api";
+import type { SpanContext, TraceFlags } from "@opentelemetry/api";
 import { Effect, Option } from "effect";
 
 // ---------------------------------------------------------------------------

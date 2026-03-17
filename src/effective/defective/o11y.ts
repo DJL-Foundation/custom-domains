@@ -1,5 +1,4 @@
 import { Resource, Tracer } from "@effect/opentelemetry";
-import { CloudflareEnv } from "#effective/cloudflare";
 import {
   type Attributes,
   type Context as OtelContext,
@@ -14,8 +13,8 @@ import {
   SimpleSpanProcessor,
   TraceIdRatioBasedSampler,
 } from "@opentelemetry/sdk-trace-base";
-
 import { Context, Effect, Layer } from "effect";
+import { CloudflareEnv } from "#effective/cloudflare";
 // Note: OtelContext = @opentelemetry/api Context, Context = effect Context
 import { APP_VERSION, CURRENT_BRANCH, LATEST_COMMIT_HASH } from "#version";
 
