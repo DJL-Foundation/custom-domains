@@ -37,7 +37,7 @@
       },
       "secrets": {
         "required": ["ACCESS_TOKEN", "ENCRYPTION_KEY", "AXIOM_TOKEN"],
-      },
+      },"name": "custom-domains",
     },
     "staging": {
       "workers_dev": true,
