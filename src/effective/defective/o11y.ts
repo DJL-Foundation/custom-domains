@@ -45,7 +45,11 @@ export const OTelConfigLive = Layer.effect(
     const axiomApiToken = yield* cf.get("AXIOM_TOKEN");
     const axiomDataset = yield* cf.get("AXIOM_DATASET");
 
-    return OTelConfigService.of({ axiomOtlpUrl, axiomApiToken, axiomDataset });
+    return OTelConfigService.of({
+      axiomOtlpUrl: axiomOtlpUrl ?? "",
+      axiomApiToken: axiomApiToken,
+      axiomDataset: axiomDataset ?? "",
+    });
   }),
 );
 
@@ -215,4 +219,127 @@ export const annotateThis = <A, E, R>(
     }
 
     return Effect.annotateCurrentSpan("error.message", String(error));
+  });
+
+type JsonPrimitive = string | number | boolean | null;
+type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
+
+const toJsonValue = (
+  value: unknown,
+  seen: WeakSet<object> = new WeakSet(),
+): JsonValue => {
+  if (
+    value === null ||
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return value;
+  }
+
+  if (typeof value === "bigint") {
+    return value.toString();
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => toJsonValue(item, seen));
+  }
+
+  if (typeof value === "object" && value !== null) {
+    if (seen.has(value)) {
+      return "[Circular]";
+    }
+    seen.add(value);
+
+    const output: Record<string, JsonValue> = {};
+    for (const [key, item] of Object.entries(value)) {
+      output[key] = toJsonValue(item, seen);
+    }
+    return output;
+  }
+
+  if (typeof value === "undefined") {
+    return "[undefined]";
+  }
+
+  return String(value);
+};
+
+const serializeCurrentSpan = Effect.map(Effect.currentSpan, (span) => ({
+  name: span.name,
+  traceId: span.traceId,
+  spanId: span.spanId,
+  sampled: span.sampled,
+  kind: span.kind,
+  status: span.status,
+  parent:
+    span.parent._tag === "Some"
+      ? {
+          _tag: span.parent.value._tag,
+          traceId: span.parent.value.traceId,
+          spanId: span.parent.value.spanId,
+          sampled: span.parent.value.sampled,
+        }
+      : null,
+  attributes: Object.fromEntries(
+    Array.from(span.attributes.entries(), ([key, value]) => [
+      key,
+      toJsonValue(value),
+    ]),
+  ),
+  links: span.links.map((link) => ({
+    span: {
+      _tag: link.span._tag,
+      traceId: link.span.traceId,
+      spanId: link.span.spanId,
+      sampled: link.span.sampled,
+    },
+    attributes: Object.fromEntries(
+      Object.entries(link.attributes).map(([key, value]) => [
+        key,
+        toJsonValue(value),
+      ]),
+    ),
+  })),
+}));
+
+const logSpanSnapshot = (state: "success" | "failure") =>
+  Effect.matchEffect(serializeCurrentSpan, {
+    onFailure: () =>
+      Effect.sync(() => {
+        console.log(
+          JSON.stringify({
+            type: "effect.span.snapshot",
+            state,
+            hasSpan: false,
+            timestamp: new Date().toISOString(),
+          }),
+        );
+      }),
+    onSuccess: (span) =>
+      Effect.sync(() => {
+        console.log(
+          JSON.stringify({
+            type: "effect.span.snapshot",
+            state,
+            hasSpan: true,
+            timestamp: new Date().toISOString(),
+            span: toJsonValue(span),
+          }),
+        );
+      }),
+  });
+
+/**
+ * Logs the current Effect span as JSON with console.log.
+ *
+ * Usage:
+ *   myEffect.pipe(logCurrentSpanAsJson)
+ */
+export const logCurrentSpanAsJson = <A, E, R>(
+  effect: Effect.Effect<A, E, R>,
+): Effect.Effect<A, E, R> =>
+  Effect.tapBoth(effect, {
+    onFailure: () => logSpanSnapshot("failure"),
+    onSuccess: () => logSpanSnapshot("success"),
   });

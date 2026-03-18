@@ -4,6 +4,7 @@ import { bearerAuth } from "hono/bearer-auth";
 import { CloudflareEnv, makeCloudflareEnvLayer } from "#effective/cloudflare";
 import {
   annotateThis,
+  logCurrentSpanAsJson,
   OTelConfigLive,
   otelLive,
 } from "#effective/defective/o11y";
@@ -179,6 +180,7 @@ const postDomain = Effect.fn("post-domain")(function* (json: unknown) {
       attributes: { "kv.key": parsed.customDomain },
     }),
     annotateThis,
+    logCurrentSpanAsJson,
     Effect.match({
       onFailure: () => ({
         code: 500,
@@ -203,6 +205,7 @@ app.post("/api/domains", async (c) => {
         "http.method": c.req.method,
         "http.url": c.req.url,
       }),
+      logCurrentSpanAsJson,
       Effect.provide(otelLive),
       Effect.provide(OTelConfigLive),
       Effect.provide(makeCloudflareEnvLayer(c.env)),
@@ -231,6 +234,7 @@ const deleteDomain = Effect.fn("delete-domain")(function* (json: unknown) {
       attributes: { "kv.key": parsed.customDomain },
     }),
     annotateThis,
+    logCurrentSpanAsJson,
     Effect.match({
       onFailure: () => ({
         code: 500,
@@ -255,6 +259,7 @@ app.delete("/api/domains", async (c) => {
         "http.method": c.req.method,
         "http.url": c.req.url,
       }),
+      logCurrentSpanAsJson,
       Effect.provide(otelLive),
       Effect.provide(OTelConfigLive),
       Effect.provide(makeCloudflareEnvLayer(c.env)),
@@ -277,6 +282,9 @@ const proxyRequest = Effect.fn("proxy-request")(function* (
   const kv = yield* cloudflare.get("hostnames-kv");
 
   const host = Option.fromNullable(req.headers.get("Host"));
+  yield* Effect.log(
+    `Received request for host: ${Option.getOrUndefined(host)}`,
+  );
 
   if (Option.isNone(host)) {
     return {
@@ -288,6 +296,9 @@ const proxyRequest = Effect.fn("proxy-request")(function* (
 
   const targetAppUrl = yield* Effect.tryPromise(() => kv.get(host.value)).pipe(
     Effect.map(Option.fromNullable),
+  );
+  yield* Effect.log(
+    `Lookup for host ${host.value} returned: ${Option.getOrUndefined(targetAppUrl)}`,
   );
 
   if (Option.isNone(targetAppUrl)) {
@@ -313,6 +324,7 @@ const proxyRequest = Effect.fn("proxy-request")(function* (
       },
     }),
     annotateThis,
+    logCurrentSpanAsJson,
     Effect.match({
       onFailure: () => new Response("Bad Gateway", { status: 502 }),
       onSuccess: (res) => res,
@@ -346,6 +358,7 @@ app.all("*", async (c) => {
         "http.url": c.req.url,
         "http.host": c.req.header("Host") ?? "unknown",
       }),
+      logCurrentSpanAsJson,
       Effect.provide(otelLive),
       Effect.provide(OTelConfigLive),
       Effect.provide(makeCloudflareEnvLayer(c.env)),
