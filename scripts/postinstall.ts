@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 
+import { BunContext, BunRuntime } from "@effect/platform-bun";
 // import { runRouteMatcherGeneration } from "./route-matchers";
 import { Effect } from "effect";
-import { BunRuntime, BunContext } from "@effect/platform-bun";
 import { syncVersion } from "./version";
 
 // runRouteMatcherGeneration();
