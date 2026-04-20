@@ -31,22 +31,21 @@
           "remote": true
         }
       ],
-      "vars": {
-        "ENVIRONMENT": "production"
-      },
       "version_metadata": {
         "binding": "version"
       },
-      "secrets": {
-        "required": ["ACCESS_TOKEN", "ENCRYPTION_KEY", "AXIOM_TOKEN"]
-      },
+  "secrets": {
+    "required": ["ACCESS_TOKEN", "ENCRYPTION_KEY", "AXIOM_TOKEN"]
+  },
+  "vars": {
+    "ENVIRONMENT": "production",
+    "AXIOM_DATASET": "foundation-sass",
+    "AXIOM_API_URL": "https://eu-central-1.aws.edge.axiom.co"
+  },
       "name": "custom-domains"
     },
     "staging": {
       "workers_dev": true,
-      "vars": {
-        "ENVIRONMENT": "staging"
-      },
       "kv_namespaces": [
         {
           "binding": "hostnames-kv",
@@ -57,9 +56,14 @@
       "version_metadata": {
         "binding": "version"
       },
-      "secrets": {
-        "required": ["ACCESS_TOKEN", "ENCRYPTION_KEY", "AXIOM_TOKEN"]
-      }
+  "secrets": {
+    "required": ["ACCESS_TOKEN", "ENCRYPTION_KEY", "AXIOM_TOKEN"]
+  },
+  "vars": {
+    "ENVIRONMENT": "staging",
+    "AXIOM_DATASET": "foundation-sass",
+    "AXIOM_API_URL": "https://eu-central-1.aws.edge.axiom.co"
+  },
     }
   },
   "kv_namespaces": [
